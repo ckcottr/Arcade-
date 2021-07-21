@@ -1,73 +1,82 @@
 // first we need to define all of our varibles using the querySelector.
-const holes = document.querySelectorAll('.hole');
-const scoreBoard = document.querySelector('.score')
-const darthVader = document.querySelectorAll('.vader')
-const countdownBoard= document.querySelector('.countdown')
-const startButton = document.querySelector('.startButton');
+$(document).ready(function () {
+
+    const holes = $('.hole');
+    const scoreBoard = $('.score');
+    const countdownBoard= $('.countdown');
+    const darthVader = $('.vader');
+
 
 // define the countdown, the last hole, a time limit, score, and a countdown leave timeUp undefined/false and make the time limit 30 seconds 
-let timeUp = ""
-let lastHole;
-let timeLimit = 30000;
-let score = 0;
-let countdown;
+    let timeUp = ""
+    let lastHole;
+    let timeLimit = 30000;
+    let score = 0;
+    let countdown = 0;
 
 // make a function that chooses a random hole using Math'.' 
-function makeRandomHole(holes){
-    const randomHole = Math.floor(Math.random() * holes.length);
-    const hole = holes [randomHole];
-    if (hole === lastHole) {
-        return makeRandomHole(holes);
+    function makeRandomHole(){
+        const randomHole = Math.floor(Math.random() * holes.length);
+        const hole = holes.eq(randomHole);
+        if (hole === lastHole){
+            return makeRandomHole(); 
+
+        } else { 
+            lastHole = hole
+            return hole;
+
+        }
     }
-    lastHole = hole;
-    return hole;
-}
 
 // make a funciton that makes a "vader" pop up from the hole.
-function popUp(){
-    const time = Math.random() * 1300 + 400;
-    const hole = makeRandomHole(holes);
-    hole.classList.add('up');
-    setTimeout(() => {
-        hole.classList.remove('up');
-        if (!timeUp) 
-        popUp();
-    } , time);
-}
+    function popUp(){
+            const time = Math.floor(Math.random() * 1300 + 400);
+            const hole = makeRandomHole();
+            hole.addClass('up');
+            setTimeout(() => {
+                hole.removeClass('up');
+                if (!timeUp){
+                    popUp();
+                }   
+            } , time);
+        }
 
 //make a function to start the game that has a countdown timer of 30 seconds.
-function startGame(){
-    countdown = timeLimit/1000;
-    scoreBoard.textContent = 0;
-    scoreBoard.style.display = 'block'
-    countdownBoard.textContent = countdown;
-    score = 0;
-    popUp();
-    setTime(function(){
-      timeUp === true;  
-    }, timeLimit)
-
-    // Make a function to start the countdown. It will activate once the user executes the click listener..
-    startCountdown => setInterval(function(){
-    countdown -=1;  
-    $(countdownBoard).textContent = $('.countdown');
-    if (countdown < 0 ) {
-        countdown = 0;
-        clearInterval(startCountdown);
-        countdownBoard.textContent = "Game Over! You shoot like a Storm Trooper"
+//couple of quick notes before you read this block of code.. I was unsuccessful at making an audio file called "force" to play once the start button is clicked.
+    function startGame(){
+        countdown = timeLimit/1000;
+        $('.score').text(0);
+        $('.score').show();
+        score = 0;
+        popUp();
+        startCountdown();
     }
-    }, 1000);
-} 
-
-startButton.addEventListener('click', startGame());
-
-//function saber()
-saber => {
-    score++;
-    this.style.backGroundImage = "url('vader2.png')";
-    setTimeOut(() => {
-        this.style.backGroundImage = `url('vader1.png')`;
-    }, 800)
-}
-
-$(darthVader).forEach(darthVader => darthVader.addEventListener('click', saber));
+// Make a function to start the countdown. It will activate once the user executes the click listener..
+    function startCountdown(){
+        setInterval(function(){
+            countdown -=1;  
+            countdownBoard.text(countdown);
+            if (countdown < 0 ) {
+                countdown = 0;
+                clearInterval(startCountdown);
+                countdownBoard.text("Game Over! You shoot like a Storm Trooper!") 
+            }
+        }, 1000);
+        
+    } 
+    
+// This function saber is updated the score board each time a "vader" is clicked.
+    function saber(e){
+        scoreBoard.text(score++);
+        $(e.target).css('background-image', "url('../images/vader2.png')")
+        setTimeout(() => {
+            $(e.target).css('background-image', "url('../images/vader1.png')")
+            $(e.target).one('click',saber);
+        }, 800)
+    }
+// This line of code sets the event to call saber.
+    for (let i = 0; i < darthVader.length; i++){
+        darthVader.eq(i).one('click',saber);
+    };
+    $('.startButton').click(startGame);
+})
